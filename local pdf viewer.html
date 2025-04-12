@@ -3,32 +3,104 @@
 <head>
     <title>PDF Chess Scanner</title>
     <style>
-        body { margin: 0; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
         .input-container {
-            position: fixed;
+            position: absolute;
             top: 10px;
             right: 10px;
             z-index: 1000;
-            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 1px solid rgba(200, 200, 200, 0.3);
+            border-radius: 10px;
+            cursor: move;
+            max-width: 250px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-container:hover {
+            border-color: rgba(200, 200, 200, 0.8);
+        }
+
+        .input-container input[type="file"] {
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #888;
+            margin-left: 5px;
+        }
+
+        #pdf-viewer {
+            width: 100vw;
+            height: 100vh;
         }
     </style>
 </head>
 <body>
-    <div class="input-container">
+    <div class="input-container" id="drag-box">
         <input type="file" id="pdf-input" accept=".pdf" />
+        <button class="clear-btn" title="پاک کردن فایل">×</button>
     </div>
-    <object id="pdf-viewer" type="application/pdf" width="100%" height="900px"></object>
+    <object id="pdf-viewer" type="application/pdf"></object>
 
     <script>
-        document.getElementById('pdf-input').addEventListener('change', function(e) {
+        const pdfInput = document.getElementById('pdf-input');
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const clearBtn = document.querySelector('.clear-btn');
+
+        pdfInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file && file.type === 'application/pdf') {
                 const fileURL = URL.createObjectURL(file);
-                document.getElementById('pdf-viewer').data = fileURL;
+                pdfViewer.data = fileURL;
             }
+        });
+
+        clearBtn.addEventListener('click', function() {
+            pdfInput.value = '';
+            pdfViewer.data = '';
+        });
+
+        const dragBox = document.getElementById('drag-box');
+        let offsetX, offsetY, isDragging = false;
+
+        dragBox.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            offsetX = e.clientX - dragBox.offsetLeft;
+            offsetY = e.clientY - dragBox.offsetTop;
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                dragBox.style.left = (e.clientX - offsetX) + 'px';
+                dragBox.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
         });
     </script>
 </body>
